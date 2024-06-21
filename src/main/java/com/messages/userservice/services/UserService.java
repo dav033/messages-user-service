@@ -57,6 +57,21 @@ public class UserService {
         }
     }
 
+    public UserResponse getUserById(Integer id) {
+        try {
+            User user = userRepository.findById(id).orElse(null);
+            return UserResponse.builder()
+                    .id(user.getId())
+                    .name(user.getName())
+                    .profile_image(user.getProfile_image())
+                    .temporal(user.getTemporal())
+                    .build();
+        } catch (Exception e) {
+            System.out.println("ERROR: " + e);
+            throw new RuntimeException("User not found");
+        }
+    }
+
     public AuthResponse registerTemporalUser() {
         try {
             HttpHeaders headers = new HttpHeaders();
@@ -65,7 +80,7 @@ public class UserService {
             User temporalUser = new User();
             temporalUser.setTemporal(true);
             temporalUser.setRooms("[]");
-            
+
             User user_response = userRepository.save(temporalUser);
 
             user_response.setName("user_" + user_response.getId());

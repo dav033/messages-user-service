@@ -38,6 +38,17 @@ public class UserController {
         }
     }
 
+    @GetMapping(value = "getUserByID")
+    public ResponseEntity<UserResponse> getUserById(@RequestParam Integer id) {
+        try {
+            return ResponseEntity.ok(userService.getUser(id));
+        } catch (Exception e) {
+            UserResponse response = UserResponse.builder()
+                    .build();
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
     @PostMapping(value = "register")
     public ResponseEntity<AuthResponse> registerUser(@RequestBody RegisterRequest requestBody) {
         try {
