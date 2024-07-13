@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.messages.userservice.dto.AuthResponse;
 import com.messages.userservice.dto.RegisterRequest;
+import com.messages.userservice.dto.TransformRequest;
 import com.messages.userservice.dto.UserResponse;
 import com.messages.userservice.services.UserService;
 
@@ -52,7 +53,6 @@ public class UserController {
     @PostMapping(value = "register")
     public ResponseEntity<AuthResponse> registerUser(@RequestBody RegisterRequest requestBody) {
         try {
-            System.out.println("requestBody: " + requestBody);
             return ResponseEntity.ok(userService.registerUser(requestBody));
         } catch (Exception e) {
             AuthResponse response = AuthResponse.builder()
@@ -91,6 +91,20 @@ public class UserController {
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
+    }
+
+    @PutMapping(value = "update_user_type/{user_id}")
+    public ResponseEntity<AuthResponse> transformUser(@RequestBody TransformRequest requestBody,
+            @PathVariable Integer user_id) {
+        try {
+
+            return ResponseEntity
+                    .ok(userService.transformUser(user_id, requestBody.getUsername(), requestBody.getPassword()));
+        } catch (Exception e) {
+            AuthResponse response = AuthResponse.builder()
+                    .build();
+            return ResponseEntity.badRequest().body(response);
         }
     }
 

@@ -6,18 +6,29 @@ import java.util.stream.Collectors;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.messages.userservice.dto.AuthResponse;
+import com.messages.userservice.dto.CreateAuthUserRequest;
 import com.messages.userservice.dto.RegisterAuthRequest;
 import com.messages.userservice.dto.RegisterRequest;
 import com.messages.userservice.dto.RoomResponse;
 import com.messages.userservice.dto.TokenResponse;
+import com.messages.userservice.dto.UpdateMessagesUsernameRequest;
 import com.messages.userservice.dto.UserResponse;
 import com.messages.userservice.models.User;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
 import com.messages.userservice.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import java.util.List;
@@ -193,4 +204,59 @@ public class UserService {
         userRepository.save(user);
     }
 
+    public AuthResponse transformUser(Integer idUser, String Username, String password) {
+
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            User user = userRepository.findById(idUser).orElseThrow(() -> new RuntimeException("User not found"));
+
+            user.setName(Username);
+            user.setTemporal(false);
+
+            userRepository.save(user);
+
+            AuthResponse authResponse = AuthResponse.builder()
+                    .id(user.getId())
+                    .name(user.getName())
+                    .profile_image(user.getProfile_image())
+                    .temporal(false)
+                    .build();
+
+            CreateAuthUserRequest createAuthUserRequest = CreateAuthUserRequest.builder()
+                    .id(user.getId())
+                    .password(password)
+                    .build();
+
+            UpdateMessagesUsernameRequest updateMessagesUsernameRequest = UpdateMessagesUsernameRequest.builder()
+                    .username(Username)
+                    .build();
+
+            HttpEntity<AuthResponse> requestBody = new HttpEntity<>(authResponse, headers);
+
+            rest.postForEntity("http://localhost:3004/users/create",
+                    createAuthUserRequest, Void.class);
+
+            HttpEntity<UpdateMessagesUsernameRequest> requestEntity = new HttpEntity<UpdateMessagesUsernameRequest>(
+                    updateMessagesUsernameRequest, headers);
+
+            RestTemplate restTemplate = new RestTemplate();
+            restTemplate.exchange("http://localhost:8082/messages/update_username/" + user.getId(), HttpMethod.PUT,
+                    requestEntity, Void.class);
+
+            ResponseEntity<TokenResponse> response = rest.postForEntity("http://localhost:3004/token/create",
+                    requestBody,
+                    TokenResponse.class);
+
+            TokenResponse tokenResponse = response.getBody();
+
+            authResponse.setToken(tokenResponse.getToken());
+
+            return authResponse;
+
+        } catch (Exception e) {
+            System.out.println("ERROR: " + e);
+            throw new RuntimeException("User not found");
+        }
+    }
 }
