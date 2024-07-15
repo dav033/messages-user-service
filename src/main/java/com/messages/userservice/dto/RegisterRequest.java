@@ -11,7 +11,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RegisterRequest {
     String name;
-    String profile_image;
-    Boolean temporal;
     String password;
 }

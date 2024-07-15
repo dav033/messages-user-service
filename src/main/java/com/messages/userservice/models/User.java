@@ -33,7 +33,7 @@ public class User {
     @Column(name = "temporal", nullable = true)
     private Boolean temporal;
 
-    @Column(name = "rooms", nullable = false)
+    @Column(name = "rooms", nullable = true)
     private String rooms;
 
     public String getRooms() {

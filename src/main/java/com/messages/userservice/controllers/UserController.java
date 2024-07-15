@@ -57,6 +57,7 @@ public class UserController {
         } catch (Exception e) {
             AuthResponse response = AuthResponse.builder()
                     .build();
+            System.err.println("Error: " + e.getMessage());
             return ResponseEntity.badRequest().body(response);
         }
     }
